@@ -1,13 +1,15 @@
 from google.adk.agents import LlmAgent
+from google.adk.tools import load_artifacts
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools.mcp_tool import StdioConnectionParams
 from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
 from mcp import StdioServerParameters
 
+from .tools import podcast_speaker
+
 MODEL_GEMINI_2_5_PRO="gemini-2.5-PRO"
 MODEL_GEMINI_2_5_FLASH="gemini-2.5-flash"
 MODEL_GEMINI_2_5_FLASH_LITE="gemini-2.5-flash-lite"
-MODEL_GEMINI_2_5_FLASH_PREVIEW_TTS="gemini-2.5-flash-preview-tts"
 
 podcast_writer_agent = LlmAgent(
     name="podcast_writer",
@@ -29,26 +31,27 @@ Speaker 1: ありがとうございます。まず1つめのWebサイトでは�
 """
 )
 
-podcast_creator_agent = LlmAgent(
-    name="podcast_creator",
+podcaster_agent = LlmAgent(
+    name="podcaster_assistant",
     model=MODEL_GEMINI_2_5_FLASH,
-    description="""受け取った内容を MC, 解説者の 2 人で話しているようなポッドキャスト形式の台本に変換し出力します。""",
+    description="""受け取った内容を MC, 解説者の 2 人で話しているようなポッドキャスト形式の台本に変換し、それを音声で出力します。""",
     instruction="""あなたはプロフェッショナルなポッドキャストの制作者です。
 1. 受け取った内容を `podcast_writer_agent` を利用し、ポッドキャスト形式の台本に変換します。
+2. ポッドキャスト形式の台本を `podcast_speaker` ツールを利用して、ポッドキャスト形式の音声に変換して出力します。
 """,
-    tools=[AgentTool(agent=podcast_writer_agent,)],
+    tools=[AgentTool(agent=podcast_writer_agent,), podcast_speaker, load_artifacts],
 )
 
 agent = LlmAgent(
     name="learning_assistant",
     model=MODEL_GEMINI_2_5_FLASH,
-    description="""ユーザーの学習を助けるために、単体の URL、複数の URL の内容をポッドキャスト形式の台本を生成します。""",
-    instruction="""あなたはユーザーの学習を助ける優秀なアシスタントです。単体の URL、複数の URL の内容をポッドキャスト形式の台本を生成します。
+    description="""ユーザーの学習を助けるために、単体の URL、複数の URL の内容をポッドキャスト形式の音声を生成します。""",
+    instruction="""あなたはユーザーの学習を助ける優秀なアシスタントです。単体の URL、複数の URL の内容をポッドキャスト形式の音声を生成します。
 1. あなたは URL を与えられたら、`fetch` ツールを利用し、コンテンツを取得します。
    また複数の URL を受け取った場合は `fetch` をそれぞれの URL について呼び出します。
    URL を含まない場合は、ポッドキャスト形式で出力してほしい URL をリクエストしてください。
 2. 単一の URL、または複数の URL からコンテンツを取得した場合は、その内容を全て連結します。
-3. 連結した内容を `podcast_creator` に渡し、ポッドキャスト形式の台本を生成します。
+3. 連結した内容を `podcaster_agent` に渡し、ポッドキャスト形式の音声を生成します。
 """,
     tools=[
         MCPToolset(
@@ -63,7 +66,7 @@ agent = LlmAgent(
             ),
         ),
     ],
-    sub_agents=[podcast_creator_agent,]
+    sub_agents=[podcaster_agent,]
 )
 
 root_agent = agent
