@@ -1,7 +1,5 @@
 from google.adk.agents import LlmAgent
-from google.adk.tools.mcp_tool import StdioConnectionParams
-from google.adk.tools.mcp_tool.mcp_toolset import MCPToolset
-from mcp import StdioServerParameters
+from google.adk.tools.load_web_page import load_web_page
 
 MODEL_GEMINI_2_5_PRO="gemini-2.5-PRO"
 MODEL_GEMINI_2_5_FLASH="gemini-2.5-flash"
@@ -12,23 +10,11 @@ agent = LlmAgent(
     model=MODEL_GEMINI_2_5_FLASH,
     description="""ユーザーの学習を助けるために、できる限り正確な回答を返答するエージェントです。""",
     instruction="""あなたはユーザーの学習を助ける優秀なアシスタントです。ユーザーの質問にできる限り正確に回答してください。
-1. あなたは URL を与えられたら、`fetch` ツールを利用し、コンテンツを取得します。
-   また複数の URL を受け取った場合は `fetch` をそれぞれの URL について呼び出します。
+1. あなたは URL を与えられたら、`load_web_page` ツールを利用し、コンテンツを取得します。
+   また複数の URL を受け取った場合は `load_web_page` をそれぞれの URL について呼び出します。
    URL を含まない質問の場合は、質問にできる限り正確に回答します。
 2. 単一の URL、または複数の URL からコンテンツを取得した場合は、コンテンツの内容すべてを元に回答を生成します。""",
-    tools=[
-        MCPToolset(
-            connection_params=StdioConnectionParams(
-                server_params=StdioServerParameters(
-                    command='uvx',
-                    args=[
-                        "mcp-server-fetch",
-                    ],
-                ),
-                timeout=10,
-            ),
-        ),
-    ]
+    tools=[load_web_page]
 )
 
 root_agent = agent
