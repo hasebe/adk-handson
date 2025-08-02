@@ -25,7 +25,7 @@ agent = LlmAgent(
                         "mcp-server-fetch",
                     ],
                 ),
-                timeout=10,
+                timeout=20,
             ),
         ),
     ]

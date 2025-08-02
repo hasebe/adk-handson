@@ -1,7 +1,7 @@
 [project]
-name = "adk-handson"
+name = "adk-agentengine-basic"
 version = "0.1.0"
-description = "Add your description here"
+description = "Hands-on asset for Agent Development Kit and Agent Engine basic level"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
